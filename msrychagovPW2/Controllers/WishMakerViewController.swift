@@ -41,6 +41,33 @@ final class WishMakerViewController: UIViewController {
         static let buttonText: String = "Add Wish"
         static let buttonRadius: CGFloat = 10
         
+        enum Title {
+            
+        }
+        
+        enum Description {
+            
+        }
+        
+        enum SlidersStack {
+            
+        }
+        
+        enum ToggleButton {
+            
+        }
+        
+        enum AddWishButton {
+            
+        }
+        
+        enum ScheduleButton {
+            static let titleText: String = "Schedule wish granting"
+        }
+        
+        enum ActionStack {
+            
+        }
         
     }
     
@@ -51,6 +78,8 @@ final class WishMakerViewController: UIViewController {
     private var stack = UIStackView()
     private let addWishButton: UIButton = UIButton(type: .system)
     private let closeViewButton: UIButton = UIButton(type: .close)
+    private let actionStack: UIStackView = UIStackView()
+    private let scheduleButton: UIButton = UIButton(type: .system)
     private var redComponent = 0.0
     private var greenComponent = 0.0
     private var blueComponent = 0.0
@@ -64,9 +93,9 @@ final class WishMakerViewController: UIViewController {
     // MARK: - Configures
     private func configureUI() {
         configureTitle()
-        configureAddWishButton()
+        configureActionStack()
         configureDescription()
-        configureSliders()
+        configureSlidersStack()
         configureToggleButton()
     }
 
@@ -103,7 +132,7 @@ final class WishMakerViewController: UIViewController {
         descriptionView.setWidth(Constants.descriptionWidth)
     }
 
-    private func configureSliders() {
+    private func configureSlidersStack() {
         view.addSubview(stack)
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.axis = .vertical
@@ -118,7 +147,7 @@ final class WishMakerViewController: UIViewController {
         
         stack.pinCenterX(to: view.centerXAnchor)
         stack.pinLeft(to: view.leadingAnchor, Constants.leftContraint)
-        stack.pinBottom(to: addWishButton.topAnchor, 10)
+        stack.pinBottom(to: actionStack.topAnchor, 10)
         stack.setWidth(Constants.stackWidth)
         
         for slider in [sliderRed, sliderBlue, sliderGreen] {
@@ -167,32 +196,34 @@ final class WishMakerViewController: UIViewController {
         addWishButton.translatesAutoresizingMaskIntoConstraints = false
         addWishButton.setTitle(Constants.buttonText, for: .normal)
         addWishButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
-        toggleButton.backgroundColor = .white
         addWishButton.setTitleColor(.black, for: .normal)
         addWishButton.layer.cornerRadius = Constants.buttonRadius
         addWishButton.addTarget(self, action: #selector(addWishButtonPressed), for: .touchUpInside)
-        
-        
-        view.addSubview(addWishButton)
-        addWishButton.pinCenterX(to: view.centerXAnchor)
-        addWishButton.setHeight(Constants.buttonHeight)
-        addWishButton.setWidth(Constants.toggleButtonWidth)
-        addWishButton.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, 10)
-
         addWishButton.backgroundColor = .white
 
     }
     
-    private func configureCloseViewButton() {
-        closeViewButton.translatesAutoresizingMaskIntoConstraints = false
-        closeViewButton.setTitleColor(.systemPink, for: .normal)
-        
-        view.addSubview(closeViewButton)
-        closeViewButton.setHeight(Constants.buttonHeight)
-        closeViewButton.setWidth(Constants.buttonHeight)
-        closeViewButton.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 10)
-        closeViewButton.pinRight(to: view.safeAreaLayoutGuide.rightAnchor, 10)
-        closeViewButton.addTarget(self, action: #selector(closeViewButtonPressed), for: .touchUpInside)
+    private func configureScheduleButton() {
+        scheduleButton.translatesAutoresizingMaskIntoConstraints = false
+        scheduleButton.setTitle(Constants.ScheduleButton.titleText, for: .normal)
+        scheduleButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
+        scheduleButton.setTitleColor(.black, for: .normal)
+        scheduleButton.layer.cornerRadius = Constants.buttonRadius
+        scheduleButton.addTarget(self, action: #selector(addWishButtonPressed), for: .touchUpInside)
+        scheduleButton.backgroundColor = .white
+    }
+    
+    private func configureActionStack() {
+        actionStack.axis = .vertical
+        view.addSubview(actionStack)
+        actionStack.spacing = 3
+        for button in [addWishButton, scheduleButton] {
+            actionStack.addArrangedSubview(button)
+        }
+        configureAddWishButton()
+        configureScheduleButton()
+        actionStack.pinBottom(to: view, 15)
+        actionStack.pinHorizontal(to: view, 15)
     }
     // MARK: - Actions
     @objc private func toggleSlidersVisibility() {
@@ -203,9 +234,6 @@ final class WishMakerViewController: UIViewController {
         present(WishStoringViewController(), animated: true)
 
     }
-    
-    @objc private func closeViewButtonPressed() {
-        dismiss(animated: true)
-    }
+
 }
 
