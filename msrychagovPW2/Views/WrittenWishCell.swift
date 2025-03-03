@@ -7,7 +7,7 @@
 import UIKit
 
 
-final class WrittenWishCell: UITableViewCell {
+final class WrittenWishCell: UITableViewCell, UIContextMenuInteractionDelegate {
     //MARK: - Constants
     static let reuseId: String = "WrittenWishCell"
     private enum Constants {
@@ -47,59 +47,47 @@ final class WrittenWishCell: UITableViewCell {
     //MARK: - Variables
     private let wishLabel: UILabel = UILabel()
     private let wrap: UIView = UIView()
-    private let deleteButton: UIButton = UIButton(type: .custom)
-    private let editButton: UIButton = UIButton(type: .custom)
-    private let shareButton: UIButton = UIButton(type: .system)
     weak var delegate: WrittenWishCellDelegate?
     var index: Int?
     var onDelete: (() -> Void)?
+    var onEdit: (() -> Void)?
+    var onShare: (() -> Void)?
     
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        configureUI()
-    }
+            super.init(style: style, reuseIdentifier: reuseIdentifier)
+            configureUI()
+
+            let interaction = UIContextMenuInteraction(delegate: self)
+            addInteraction(interaction) // ✅ Добавляем контекстное меню в ячейку
+        }
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions in
+            let editAction = UIAction(title: "✏️ Редактировать", image: UIImage(systemName: "pencil")) { _ in
+                self.onEdit?()
+            }
+            
+            let shareAction = UIAction(title: "📤 Поделиться", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                self.onShare?()
+            }
 
+            let deleteAction = UIAction(title: "🗑️ Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.onDelete?()
+            }
+
+            return UIMenu(title: "", children: [editAction, shareAction, deleteAction])
+        }
+    }
     func configure(with wish: String, at index: Int, delegate: WrittenWishCellDelegate?) {
         self.wishLabel.text = wish
         self.index = index
         self.delegate = delegate
-    }
-    
-    func configureDeleteButton() {
-        deleteButton.translatesAutoresizingMaskIntoConstraints = false
-        deleteButton.tintColor = .black
-        deleteButton.setImage(UIImage(systemName: Constants.deleteButton.systemName), for: .normal)
-        wrap.addSubview(deleteButton)
-        deleteButton.pinTop(to: wrap.topAnchor, 5)
-        deleteButton.pinRight(to: wrap.trailingAnchor, 5)
-        deleteButton.addTarget(self, action: #selector(deleteButtonPressed), for: .touchUpInside)
-    }
-    
-    private func configureShareButton() {
-        shareButton.translatesAutoresizingMaskIntoConstraints = false
-        shareButton.tintColor = .black
-        shareButton.setImage(UIImage(systemName: "square.and.arrow.up"), for: .normal) // Иконка "Поделиться"
-        
-        wrap.addSubview(shareButton)
-        shareButton.pinTop(to: wrap.topAnchor, 5)
-        shareButton.pinRight(to: editButton.leadingAnchor, 5) // Располагаем слева от кнопки "Редактировать"
-
-        shareButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
-    }
-    
-    func configureEditButton() {
-        editButton.translatesAutoresizingMaskIntoConstraints = false
-        editButton.tintColor = .black
-        editButton.setImage(UIImage(systemName: Constants.editButton.systemName), for: .normal)
-        wrap.addSubview(editButton)
-        editButton.pinTop(to: wrap.topAnchor, 5)
-        editButton.pinRight(to: deleteButton.leadingAnchor, 5)
-        editButton.addTarget(self, action: #selector (editButtonPressed), for: .touchUpInside)
     }
     
     func configureWrap () {
@@ -115,13 +103,9 @@ final class WrittenWishCell: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .clear
         configureWrap()
-        configureDeleteButton()
-        configureEditButton()
-        configureShareButton()
         wrap.addSubview(wishLabel)
         wishLabel.pinVertical(to: wrap, Constants.Wrap.wishLabelOffset)
         wishLabel.pinLeft(to: wrap, Constants.Wrap.wishLabelOffset)
-        wishLabel.pinRight(to: deleteButton, Constants.Wrap.wishLabelOffset)
     }
     
     // MARK: - Actions
@@ -144,3 +128,4 @@ protocol WrittenWishCellDelegate: AnyObject {
     func editWish(_ text: String, at index: Int)
     func shareWish(_ text: String)
 }
+

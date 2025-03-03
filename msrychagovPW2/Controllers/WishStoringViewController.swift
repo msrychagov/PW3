@@ -191,12 +191,24 @@ extension WishStoringViewController: UITableViewDataSource {
             )
             guard let wishCell = cell as? WrittenWishCell else { return cell }
             wishCell.configure(with: wishArray[indexPath.row], at: indexPath.row, delegate: self)
+            
+            wishCell.onEdit = { [weak self] in
+                guard let self = self else { return }
+                self.editWish(self.wishArray[indexPath.row], at: indexPath.row)
+            }
+
+            wishCell.onShare = { [weak self] in
+                guard let self = self else { return }
+                let activityViewController = UIActivityViewController(activityItems: [self.wishArray[indexPath.row]], applicationActivities: nil)
+                self.present(activityViewController, animated: true)
+            }
+
             wishCell.onDelete = { [weak self] in
-                        guard let self = self else { return }
-                        self.wishArray.remove(at: indexPath.row)
-                        defaults.set(self.wishArray, forKey: Constants.WishArray.toSetName)
-                        self.tableView.reloadData()
-                    }
+                guard let self = self else { return }
+                self.wishArray.remove(at: indexPath.row)
+                self.defaults.set(self.wishArray, forKey: "Wishes")
+                self.tableView.reloadData()
+            }
             return wishCell
         default:
             return UITableViewCell()
@@ -230,7 +242,9 @@ extension WishStoringViewController: UITableViewDelegate {
         dismiss(animated: true) { [weak self] in
             self?.didSelectWish(selectedWish) // ✅ Теперь передаётся после закрытия экрана
         }
+        
     }
+    
 }
 
 

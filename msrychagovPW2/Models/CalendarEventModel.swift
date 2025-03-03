@@ -34,9 +34,9 @@ final class CalendarManager: CalendarManaging {
            case .authorized:
                print("Доступ к календарю уже предоставлен")
            case .fullAccess:
-               print("hui")
+               print("Доступ полностью разрешён")
            case .writeOnly:
-               print("pizda")
+               print("Доступ только на запись")
            @unknown default:
                print("Неизвестный статус доступа")
            }
