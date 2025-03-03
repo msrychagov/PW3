@@ -25,7 +25,9 @@ final class TextParametrCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     //MARK: - Methods
-    
+    func setText(_ text: String) {
+        textField.text = text // ✅ Устанавливаем текст в поле ввода
+    }
     //MARK: - Configures
     func configure (with parametr: String) {
         label.text = parametr

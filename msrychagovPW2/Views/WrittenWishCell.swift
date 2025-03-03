@@ -136,7 +136,7 @@ final class WrittenWishCell: UITableViewCell {
     
     @objc private func shareButtonTapped() {
         guard let text = wishLabel.text else { return }
-        delegate?.shareWish(text) // Вызываем делегат и передаём текст желания
+        delegate?.shareWish("Желание:\n" + text) // Вызываем делегат и передаём текст желания
     }
 }
 

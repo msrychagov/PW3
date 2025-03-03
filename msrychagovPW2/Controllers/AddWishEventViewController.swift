@@ -23,6 +23,12 @@ final class AddWishEventViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
     }
+    
+    func setWishTitle(_ title: String) {
+        titleText = title // ✅ Записываем заголовок
+        tableView.reloadData() // ✅ Обновляем таблицу, чтобы заголовок отобразился
+    }
+    
     //MARK: Configures
     func configureUI() {
         configureTableView()
@@ -100,8 +106,11 @@ extension AddWishEventViewController: UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: TextParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? TextParametrCell {
                 cell.configure(with: "Title")
-                cell.addEvent = { [weak self] newEvent in guard let self = self else { return }
-                    titleText = newEvent}
+                cell.setText(titleText) // ✅ Теперь заголовок будет заполняться
+                cell.addEvent = { [weak self] newEvent in
+                    guard let self = self else { return }
+                    self.titleText = newEvent
+                }
             }
             return cell
         case 1:

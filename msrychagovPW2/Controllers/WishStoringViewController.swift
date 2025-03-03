@@ -17,6 +17,11 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
         present(activityViewController, animated: true)
     }
     
+    func didSelectWish(_ wish: String) {
+        onWishSelected?(wish) // ✅ Передаём желание
+        navigationController?.popViewController(animated: true) // ✅ Закрываем экран
+    }
+    
     
     // MARK: - Constants
     
@@ -86,6 +91,7 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
     private let editText: String = ""
     private var editingIndex: Int? // Индекс редактируемого желания
     private var addWishCell: AddWishCell?
+    var onWishSelected: ((String) -> Void)?
     
     
     // MARK: - Methods
@@ -217,6 +223,13 @@ extension WishStoringViewController: UITableViewDelegate {
         // Возвращаем конфигурацию действий
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
         return configuration
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedWish = wishArray[indexPath.row]
+        dismiss(animated: true) { [weak self] in
+            self?.didSelectWish(selectedWish) // ✅ Теперь передаётся после закрытия экрана
+        }
     }
 }
 

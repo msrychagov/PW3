@@ -45,6 +45,54 @@ class WishCalendarViewController: UIViewController{
         )
     }
     
+    private func openCreateWishScreen() {
+        let vc = AddWishEventViewController() // Создаём новый экран
+        vc.view.backgroundColor = view.backgroundColor
+        
+        vc.onAddWish = { [weak self] newWish in
+            guard let self = self else { return }
+            
+            // Добавляем новое событие в список
+            self.wishEvents.append(newWish)
+            
+            // Сохраняем данные
+            self.saveEvents()
+            
+            // Обновляем коллекцию
+            self.collectionView.reloadData()
+        }
+        
+        present(vc, animated: true) // Открываем экран
+    }
+    
+    private func openWishListScreen() {
+        let wishListVC = WishStoringViewController() // Экран списка желаний
+        
+        wishListVC.view.backgroundColor = self.view.backgroundColor // ✅ Передаём цвет фона
+        
+        wishListVC.onWishSelected = { [weak self] selectedWish in
+            self?.navigationController?.popViewController(animated: true) // 🔙 Закрываем экран
+            self?.addWishFromList(selectedWish) // ✅ Открываем экран создания события
+        }
+        
+        navigationController?.pushViewController(wishListVC, animated: true) // ✅ Переход на экран списка
+    }
+    
+    private func addWishFromList(_ wish: String) {
+        let vc = AddWishEventViewController()
+        vc.view.backgroundColor = view.backgroundColor
+        vc.setWishTitle(wish) // ✅ Устанавливаем заголовок
+        
+        vc.onAddWish = { [weak self] newWish in
+            guard let self = self else { return }
+            self.wishEvents.append(newWish)
+            self.saveEvents()
+            self.collectionView.reloadData()
+        }
+        
+        present(vc, animated: true)
+    }
+    
     //MARK: - Configures
     private func configureUI() {
         configureCollection()
@@ -93,21 +141,27 @@ class WishCalendarViewController: UIViewController{
     
     //MARK: - Actions
     @objc func addButtonTapped() {
-        let vc = AddWishEventViewController()
-        vc.view.backgroundColor = view.backgroundColor
-        vc.onAddWish = { [weak self] newWish in
-            guard let self = self else { return }
-            
-            // Добавляем новое событие в массив
-            self.wishEvents.append(newWish)
-            
-            self.saveEvents()
-            // Обновляем коллекцию
-            self.collectionView.reloadData()
+        let alertController = UIAlertController(
+            title: "Добавить желание",
+            message: "Выберите способ добавления",
+            preferredStyle: .actionSheet
+        )
+        
+        let createNewAction = UIAlertAction(title: "Создать новое", style: .default) { _ in
+            self.openCreateWishScreen()
         }
         
-        present(vc, animated: true)
+        let chooseExistingAction = UIAlertAction(title: "Выбрать из списка", style: .default) { _ in
+            self.openWishListScreen()
+        }
         
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+        
+        alertController.addAction(createNewAction)
+        alertController.addAction(chooseExistingAction)
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true)
     }
 }
 
@@ -125,77 +179,42 @@ extension WishCalendarViewController: UICollectionViewDataSource {
         collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        switch indexPath.item {
-        case 0:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier:
-                                                            WishEventCell.reuseIdentifier, for: indexPath)
-            guard let wishEventCell = cell as? WishEventCell else {
-                return cell
-            }
-            
-            wishEventCell.configure(
-                with: WishEventModel(
-                    title: "Test Title",
-                    description: "Test Description",
-                    startDate: Date(),
-                    endDate: Date()
-                )
-            )
-            return wishEventCell
-        case 1:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier:
-                                                            WishEventCell.reuseIdentifier, for: indexPath)
-            guard let wishEventCell = cell as? WishEventCell else {
-                return cell
-            }
-            
-            wishEventCell.configure(
-                with: WishEventModel(
-                    title: "hhhhh",
-                    description: "Test Description",
-                    startDate: Date(),
-                    endDate: Date()
-                )
-            )
-            return wishEventCell
-        default :
-            let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: WishEventCell.reuseIdentifier,
-                for: indexPath
-            )
-            guard let wishEventCell = cell as? WishEventCell else {
-                return cell
-            }
-            wishEventCell.onDelete = { [weak self] in
-                guard let self = self else { return }
-                let model = self.wishEvents[indexPath.item]
-                
-                if let eventIdentifier = model.eventIdentifier, !eventIdentifier.isEmpty {
-                    print("Удаление события с идентификатором: \(eventIdentifier)")
-                    let calendarManager = CalendarManager()
-                    calendarManager.delete(eventIdentifier: eventIdentifier) { success in
-                        if success {
-                            print("Событие успешно удалено из календаря.")
-                        } else {
-                            print("Не удалось удалить событие из календаря.")
-                        }
-                    }
-                } else {
-                    print("Идентификатор события отсутствует или пуст.")
-                }
-                
-                self.wishEvents.remove(at: indexPath.item)
-                self.collectionView.reloadData()
-                self.saveEvents()
-            }
-            // Получаем модель для текущего элемента
-            let model = wishEvents[indexPath.item]
-            
-            // Конфигурируем ячейку
-            wishEventCell.configure(with: model)
-            
-            return wishEventCell
+        let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: WishEventCell.reuseIdentifier,
+            for: indexPath
+        )
+        guard let wishEventCell = cell as? WishEventCell else {
+            return cell
         }
+        wishEventCell.onDelete = { [weak self] in
+            guard let self = self else { return }
+            let model = self.wishEvents[indexPath.item]
+            
+            if let eventIdentifier = model.eventIdentifier, !eventIdentifier.isEmpty {
+                print("Удаление события с идентификатором: \(eventIdentifier)")
+                let calendarManager = CalendarManager()
+                calendarManager.delete(eventIdentifier: eventIdentifier) { success in
+                    if success {
+                        print("Событие успешно удалено из календаря.")
+                    } else {
+                        print("Не удалось удалить событие из календаря.")
+                    }
+                }
+            } else {
+                print("Идентификатор события отсутствует или пуст.")
+            }
+            
+            self.wishEvents.remove(at: indexPath.item)
+            self.collectionView.reloadData()
+            self.saveEvents()
+        }
+        // Получаем модель для текущего элемента
+        let model = wishEvents[indexPath.item]
+        
+        // Конфигурируем ячейку
+        wishEventCell.configure(with: model)
+        
+        return wishEventCell
     }
 }
 
