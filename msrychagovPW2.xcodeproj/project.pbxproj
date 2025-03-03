@@ -15,7 +15,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				"Views/Untitled 3.swift",
 			);
 			target = F5D199912CDA7A44007EB47D /* msrychagovPW2 */;
 		};
@@ -149,6 +148,7 @@
 				DEVELOPMENT_TEAM = 7KVC9GS82W;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = msrychagovPW2/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -177,6 +177,7 @@
 				DEVELOPMENT_TEAM = 7KVC9GS82W;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = msrychagovPW2/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

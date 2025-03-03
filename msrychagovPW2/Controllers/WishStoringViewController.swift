@@ -6,7 +6,17 @@
 //
 import UIKit
 
-final class WishStoringViewController: UIViewController {
+final class WishStoringViewController: UIViewController, WrittenWishCellDelegate {
+    func editWish(_ text: String, at index: Int) {
+        addWishCell?.setText(text) // ✅ Устанавливаем текст в AddWishCell
+        editingIndex = index // ✅ Запоминаем, какое желание редактируем
+    }
+    
+    func shareWish(_ text: String) {
+        let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        present(activityViewController, animated: true)
+    }
+    
     
     // MARK: - Constants
     
@@ -73,10 +83,14 @@ final class WishStoringViewController: UIViewController {
     private let textField: UITextField = UITextField()
     private var wishArray: [String] = []
     private let defaults = UserDefaults.standard
+    private let editText: String = ""
+    private var editingIndex: Int? // Индекс редактируемого желания
+    private var addWishCell: AddWishCell?
     
     
     // MARK: - Methods
     override func viewDidLoad() {
+        super.viewDidLoad()
         wishArray = defaults.array(forKey: Constants.WishArray.toSetName) as? [String] ?? []
         view.backgroundColor = .gray
         configureUI()
@@ -105,6 +119,7 @@ final class WishStoringViewController: UIViewController {
         view.addSubview(tableView)
         tableView.backgroundColor = .clear
         tableView.dataSource = self
+        tableView.delegate = self
         tableView.separatorStyle = .none
         tableView.layer.cornerRadius = Constants.TableView.cornerRadius
         tableView.pin(to: view, Constants.TableView.pinConstraint)
@@ -144,12 +159,24 @@ extension WishStoringViewController: UITableViewDataSource {
                 for: indexPath
             )
             guard let addWishCell = cell as? AddWishCell else { return cell }
+            
+            self.addWishCell = addWishCell // ✅ Сохраняем ссылку на AddWishCell
+            
             addWishCell.addWish = { [weak self] newWish in
                 guard let self = self else { return }
-                self.wishArray.append(newWish)
-                defaults.set(wishArray, forKey: Constants.WishArray.toSetName)// Добавляем новое желание в массив
-                self.tableView.reloadData()    // Обновляем таблицу
+                
+                if let index = self.editingIndex {
+                    self.wishArray[index] = newWish
+                    self.editingIndex = nil
+                } else {
+                    self.wishArray.append(newWish)
+                }
+                
+                self.defaults.set(self.wishArray, forKey: Constants.WishArray.toSetName)
+                self.addWishCell?.setText("") // ✅ Очищаем поле после редактирования
+                self.tableView.reloadData()
             }
+            
             return addWishCell
         case Constants.TableView.firstSection:
             let cell = tableView.dequeueReusableCell(
@@ -157,11 +184,11 @@ extension WishStoringViewController: UITableViewDataSource {
                 for: indexPath
             )
             guard let wishCell = cell as? WrittenWishCell else { return cell }
-            wishCell.configure(with: wishArray[indexPath.row])
+            wishCell.configure(with: wishArray[indexPath.row], at: indexPath.row, delegate: self)
             wishCell.onDelete = { [weak self] in
                         guard let self = self else { return }
                         self.wishArray.remove(at: indexPath.row)
-                defaults.set(self.wishArray, forKey: Constants.WishArray.toSetName)
+                        defaults.set(self.wishArray, forKey: Constants.WishArray.toSetName)
                         self.tableView.reloadData()
                     }
             return wishCell
@@ -170,3 +197,27 @@ extension WishStoringViewController: UITableViewDataSource {
         }
     }
 }
+
+extension WishStoringViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completionHandler in guard let self = self else { return }
+            
+            self.wishArray.remove(at: indexPath.row)
+            
+            defaults.set(self.wishArray, forKey: "Wishes")
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            completionHandler(true)
+        }
+        
+        // Настройка действия
+        deleteAction.backgroundColor = UIColor.red // Цвет фона
+        deleteAction.image = UIImage(systemName: "trash") // Иконка действия
+        
+        // Возвращаем конфигурацию действий
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        return configuration
+    }
+}
+
+

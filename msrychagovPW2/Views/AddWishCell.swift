@@ -44,6 +44,10 @@ final class AddWishCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func setText(_ text: String) {
+        textField.text = text
+    }
+    
     //MARK: - Configures
     
     func configureUI() {

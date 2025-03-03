@@ -14,7 +14,7 @@ class CalendarViewController: UIViewController {
     private let confirmButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Подтвердить дату", for: .normal)
-        button.addTarget(self, action: #selector(confirmButtonTapped), for: .touchUpInside)
+        button.addTarget(CalendarViewController.self, action: #selector(confirmButtonTapped), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()

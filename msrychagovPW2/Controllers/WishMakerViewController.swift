@@ -77,13 +77,24 @@ final class WishMakerViewController: UIViewController {
     private var toggleButton = UIButton(type: .system)
     private var stack = UIStackView()
     private let addWishButton: UIButton = UIButton(type: .system)
-    private let closeViewButton: UIButton = UIButton(type: .close)
     private let actionStack: UIStackView = UIStackView()
     private let scheduleButton: UIButton = UIButton(type: .system)
     private var redComponent = 0.0
     private var greenComponent = 0.0
     private var blueComponent = 0.0
     
+    //MARK: - Properties
+    public var colors: UIColor = .black {
+            didSet {
+                // Устанавливаем цвет фона
+                view.backgroundColor = colors
+                
+                // Устанавливаем цвет текста для всех кнопок
+                for button in [addWishButton, scheduleButton, toggleButton] {
+                    button.setTitleColor(colors, for: .normal)
+                }
+            }
+        }
     // MARK: - Methods
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -164,8 +175,7 @@ final class WishMakerViewController: UIViewController {
                     self.blueComponent = value
                 default: break
                 }
-                
-                self.view.backgroundColor = UIColor(
+                self.colors = UIColor(
                     red: CGFloat(self.redComponent / Constants.maxSliderValue),
                     green: CGFloat(self.greenComponent / Constants.maxSliderValue),
                     blue: CGFloat(self.blueComponent / Constants.maxSliderValue),
@@ -180,7 +190,7 @@ final class WishMakerViewController: UIViewController {
             toggleButton.setTitle(Constants.toggleButtonTitle, for: .normal)
             toggleButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
             toggleButton.backgroundColor = .white
-            toggleButton.setTitleColor(.black, for: .normal)
+            toggleButton.setTitleColor(colors, for: .normal)
             toggleButton.layer.cornerRadius = Constants.stackCornerRadius
             toggleButton.addTarget(self, action: #selector(toggleSlidersVisibility), for: .touchUpInside)
         
@@ -196,7 +206,7 @@ final class WishMakerViewController: UIViewController {
         addWishButton.translatesAutoresizingMaskIntoConstraints = false
         addWishButton.setTitle(Constants.buttonText, for: .normal)
         addWishButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
-        addWishButton.setTitleColor(.black, for: .normal)
+        addWishButton.setTitleColor(colors, for: .normal)
         addWishButton.layer.cornerRadius = Constants.buttonRadius
         addWishButton.addTarget(self, action: #selector(addWishButtonPressed), for: .touchUpInside)
         addWishButton.backgroundColor = .white
@@ -207,9 +217,9 @@ final class WishMakerViewController: UIViewController {
         scheduleButton.translatesAutoresizingMaskIntoConstraints = false
         scheduleButton.setTitle(Constants.ScheduleButton.titleText, for: .normal)
         scheduleButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
-        scheduleButton.setTitleColor(.black, for: .normal)
+        scheduleButton.setTitleColor(colors, for: .normal)
         scheduleButton.layer.cornerRadius = Constants.buttonRadius
-        scheduleButton.addTarget(self, action: #selector(addWishButtonPressed), for: .touchUpInside)
+        scheduleButton.addTarget(self, action: #selector(scheduleWishButtonPressed), for: .touchUpInside)
         scheduleButton.backgroundColor = .white
     }
     
@@ -231,8 +241,16 @@ final class WishMakerViewController: UIViewController {
         }
     
     @objc private func addWishButtonPressed() {
-        present(WishStoringViewController(), animated: true)
+        let vc = WishStoringViewController()
+        vc.view.backgroundColor = colors
+        present(vc, animated: true)
 
+    }
+    
+    @objc private func scheduleWishButtonPressed() {
+        let vc = WishCalendarViewController()
+        vc.view.backgroundColor = colors
+        navigationController?.pushViewController(vc, animated: true)
     }
 
 }
