@@ -31,6 +31,16 @@ final class CustomSlider: UIView {
     }
 
     //MARK: - Methods
+    func setTitleColor(_ color: UIColor) {
+            titleView.textColor = color
+        }
+    
+    func setSliderColors(minimumTrack: UIColor, maximumTrack: UIColor, thumb: UIColor) {
+        slider.minimumTrackTintColor = minimumTrack
+        slider.maximumTrackTintColor = maximumTrack
+        slider.thumbTintColor = thumb
+    }
+    
     private func configureUI() {
         backgroundColor = .white
         translatesAutoresizingMaskIntoConstraints = false

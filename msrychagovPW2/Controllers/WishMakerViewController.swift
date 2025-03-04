@@ -85,16 +85,35 @@ final class WishMakerViewController: UIViewController {
     
     //MARK: - Properties
     public var colors: UIColor = .black {
-            didSet {
-                // Устанавливаем цвет фона
-                view.backgroundColor = colors
+        didSet {
+            // Устанавливаем цвет фона
+            view.backgroundColor = colors
+            let contrastColor = colors.inverted()
+            for button in [addWishButton, scheduleButton, toggleButton] {
+                button.setTitleColor(colors, for: .normal)
+                button.backgroundColor = contrastColor
+            }
+            for label in [titleView, descriptionView] {
+                label.backgroundColor = contrastColor
+                label.textColor = colors
+            }
+            
+            for subview in stack.arrangedSubviews {
+                subview.backgroundColor = contrastColor
                 
-                // Устанавливаем цвет текста для всех кнопок
-                for button in [addWishButton, scheduleButton, toggleButton] {
-                    button.setTitleColor(colors, for: .normal)
+                if let customSlider = subview as? CustomSlider {
+                    customSlider.setTitleColor(colors)
+                    customSlider.setSliderColors(
+                        minimumTrack: colors,
+                        maximumTrack: colors,
+                        thumb: colors
+                    )
                 }
             }
+            
+            
         }
+    }
     // MARK: - Methods
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,7 +128,7 @@ final class WishMakerViewController: UIViewController {
         configureSlidersStack()
         configureToggleButton()
     }
-
+    
     private func configureTitle() {
         titleView.translatesAutoresizingMaskIntoConstraints = false
         titleView.text = Constants.title
@@ -118,8 +137,8 @@ final class WishMakerViewController: UIViewController {
         titleView.backgroundColor = .white
         titleView.layer.cornerRadius = Constants.stackCornerRadius
         titleView.layer.masksToBounds = true
-
-
+        
+        
         view.addSubview(titleView)
         titleView.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
         titleView.setHeight(Constants.titleHeight)
@@ -142,12 +161,12 @@ final class WishMakerViewController: UIViewController {
         descriptionView.setHeight(Constants.descriptionHeight)
         descriptionView.setWidth(Constants.descriptionWidth)
     }
-
+    
     private func configureSlidersStack() {
         view.addSubview(stack)
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.axis = .vertical
-    
+        
         
         stack.layer.cornerRadius = Constants.stackCornerRadius
         stack.clipsToBounds = true
@@ -186,22 +205,22 @@ final class WishMakerViewController: UIViewController {
     }
     
     private func configureToggleButton() {
-            toggleButton.translatesAutoresizingMaskIntoConstraints = false
-            toggleButton.setTitle(Constants.toggleButtonTitle, for: .normal)
-            toggleButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
-            toggleButton.backgroundColor = .white
-            toggleButton.setTitleColor(colors, for: .normal)
-            toggleButton.layer.cornerRadius = Constants.stackCornerRadius
-            toggleButton.addTarget(self, action: #selector(toggleSlidersVisibility), for: .touchUpInside)
+        toggleButton.translatesAutoresizingMaskIntoConstraints = false
+        toggleButton.setTitle(Constants.toggleButtonTitle, for: .normal)
+        toggleButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
+        toggleButton.backgroundColor = .white
+        toggleButton.setTitleColor(colors, for: .normal)
+        toggleButton.layer.cornerRadius = Constants.stackCornerRadius
+        toggleButton.addTarget(self, action: #selector(toggleSlidersVisibility), for: .touchUpInside)
         
         
-            view.addSubview(toggleButton)
-            toggleButton.pinCenterX(to: view.centerXAnchor)
-            toggleButton.setHeight(Constants.toggleButtonHeight)
-            toggleButton.setWidth(Constants.toggleButtonWidth)
-            toggleButton.pinBottom(to: stack.topAnchor, Constants.toggleButtonBottomConstraint)
-        }
-
+        view.addSubview(toggleButton)
+        toggleButton.pinCenterX(to: view.centerXAnchor)
+        toggleButton.setHeight(Constants.toggleButtonHeight)
+        toggleButton.setWidth(Constants.toggleButtonWidth)
+        toggleButton.pinBottom(to: stack.topAnchor, Constants.toggleButtonBottomConstraint)
+    }
+    
     private func configureAddWishButton() {
         addWishButton.translatesAutoresizingMaskIntoConstraints = false
         addWishButton.setTitle(Constants.buttonText, for: .normal)
@@ -210,7 +229,7 @@ final class WishMakerViewController: UIViewController {
         addWishButton.layer.cornerRadius = Constants.buttonRadius
         addWishButton.addTarget(self, action: #selector(addWishButtonPressed), for: .touchUpInside)
         addWishButton.backgroundColor = .white
-
+        
     }
     
     private func configureScheduleButton() {
@@ -237,14 +256,16 @@ final class WishMakerViewController: UIViewController {
     }
     // MARK: - Actions
     @objc private func toggleSlidersVisibility() {
-            stack.isHidden.toggle()
-        }
+        stack.isHidden.toggle()
+    }
     
     @objc private func addWishButtonPressed() {
         let vc = WishStoringViewController()
         vc.view.backgroundColor = colors
+        vc.cellBackgroundColor = colors.inverted()
+        vc.wishLabelTextColor = colors
         present(vc, animated: true)
-
+        
     }
     
     @objc private func scheduleWishButtonPressed() {
@@ -252,6 +273,16 @@ final class WishMakerViewController: UIViewController {
         vc.view.backgroundColor = colors
         navigationController?.pushViewController(vc, animated: true)
     }
+    
+}
 
+extension UIColor {
+    /// Инвертирует цвет (меняет белый на черный, синий на желтый и т. д.)
+    func inverted() -> UIColor {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        self.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return UIColor(red: 1 - red, green: 1 - green, blue: 1 - blue, alpha: alpha)
+    }
 }
 

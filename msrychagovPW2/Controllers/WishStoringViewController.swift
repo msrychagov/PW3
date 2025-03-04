@@ -7,24 +7,7 @@
 import UIKit
 
 final class WishStoringViewController: UIViewController, WrittenWishCellDelegate {
-    func editWish(_ text: String, at index: Int) {
-        addWishCell?.setText(text) // ✅ Устанавливаем текст в AddWishCell
-        editingIndex = index // ✅ Запоминаем, какое желание редактируем
-    }
-    
-    func shareWish(_ text: String) {
-        let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
-        present(activityViewController, animated: true)
-    }
-    
-    func didSelectWish(_ wish: String) {
-        onWishSelected?(wish) // ✅ Передаём желание
-        navigationController?.popViewController(animated: true) // ✅ Закрываем экран
-    }
-    
-    
     // MARK: - Constants
-    
     private enum Constants {
         enum View {
             enum Names {
@@ -38,12 +21,6 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
             enum Colors {
                 static let background: UIColor = .systemGray6
             }
-        }
-        enum CloseButton {
-            static let systemName: String = "xmark.app.fill"
-            static let topConstraint: CGFloat = 10
-            static let trailingConstraint: CGFloat = 10
-            static let tintColor: UIColor = .black
         }
         
         enum TableView {
@@ -82,15 +59,17 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
     
     
     // MARK: - Variables
-    private let closeButton: UIButton = UIButton(type: .custom)
     private let addWishButton: UIButton = UIButton(type: .system)
     private let tableView: UITableView = UITableView(frame: .zero)
     private let textField: UITextField = UITextField()
     private var wishArray: [String] = []
     private let defaults = UserDefaults.standard
     private let editText: String = ""
+    var cellBackgroundColor: UIColor = .white
+    var wishLabelTextColor: UIColor = .black
     private var editingIndex: Int? // Индекс редактируемого желания
     private var addWishCell: AddWishCell?
+    var textColor: UIColor = .black
     var onWishSelected: ((String) -> Void)?
     
     
@@ -99,29 +78,35 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
         super.viewDidLoad()
         wishArray = defaults.array(forKey: Constants.WishArray.toSetName) as? [String] ?? []
         view.backgroundColor = .gray
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+           tapGesture.cancelsTouchesInView = false // Позволяет обрабатывать другие нажатия
+           view.addGestureRecognizer(tapGesture)
+        
+        
         configureUI()
         
     }
     
+    func editWish(_ text: String, at index: Int) {
+        addWishCell?.setText(text) // ✅ Устанавливаем текст в AddWishCell
+        editingIndex = index // ✅ Запоминаем, какое желание редактируем
+    }
+    
+    func shareWish(_ text: String) {
+        let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        present(activityViewController, animated: true)
+    }
+    
+    func didSelectWish(_ wish: String) {
+        onWishSelected?(wish) // ✅ Передаём желание
+    }
+    
     // MARK: - Configures
     private func configureUI() {
-        configureCloseButton()
         configureTable()
     }
     
-    
-    private func configureCloseButton() {
-        closeButton.translatesAutoresizingMaskIntoConstraints = Constants.Other.translatesAutoresizingMaskIntoConstraints
-        closeButton.tintColor = Constants.CloseButton.tintColor
-        closeButton.setImage(UIImage(systemName: Constants.CloseButton.systemName),for: .normal)
-        view.addSubview(closeButton)
-        closeButton.pinTop(to: view.safeAreaLayoutGuide.topAnchor, Constants.CloseButton.topConstraint)
-        closeButton.pinRight(to: view.safeAreaLayoutGuide.trailingAnchor, Constants.CloseButton.trailingConstraint)
-        closeButton.addTarget(self, action: #selector(closeViewButtonPressed), for: .touchUpInside)
-    }
-    
     private func configureTable() {
-        closeButton.translatesAutoresizingMaskIntoConstraints = Constants.Other.translatesAutoresizingMaskIntoConstraints
         view.addSubview(tableView)
         tableView.backgroundColor = .clear
         tableView.dataSource = self
@@ -135,8 +120,8 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
     }
     
     // MARK: - Actions
-    @objc private func closeViewButtonPressed() {
-        dismiss(animated: true)
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
 }
 
@@ -165,7 +150,7 @@ extension WishStoringViewController: UITableViewDataSource {
                 for: indexPath
             )
             guard let addWishCell = cell as? AddWishCell else { return cell }
-            
+            addWishCell.configure(textColor: wishLabelTextColor, backgroundColor: cellBackgroundColor)
             self.addWishCell = addWishCell // ✅ Сохраняем ссылку на AddWishCell
             
             addWishCell.addWish = { [weak self] newWish in
@@ -190,7 +175,8 @@ extension WishStoringViewController: UITableViewDataSource {
                 for: indexPath
             )
             guard let wishCell = cell as? WrittenWishCell else { return cell }
-            wishCell.configure(with: wishArray[indexPath.row], at: indexPath.row, delegate: self)
+            wishCell.configure(with: wishArray[indexPath.row], at: indexPath.row, withBgColor: cellBackgroundColor,
+                               withTextColor: wishLabelTextColor, delegate: self)
             
             wishCell.onEdit = { [weak self] in
                 guard let self = self else { return }
@@ -239,10 +225,15 @@ extension WishStoringViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedWish = wishArray[indexPath.row]
-        dismiss(animated: true) { [weak self] in
-            self?.didSelectWish(selectedWish) // ✅ Теперь передаётся после закрытия экрана
+        
+        // Если клавиатура активна — просто скрываем её
+        if view.isFirstResponder || textField.isFirstResponder {
+            view.endEditing(true)
+            return
         }
         
+        // Если клавиатура не была активна, выполняем стандартное действие
+        onWishSelected?(selectedWish)
     }
     
 }

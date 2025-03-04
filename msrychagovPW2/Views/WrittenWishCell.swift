@@ -84,16 +84,49 @@ final class WrittenWishCell: UITableViewCell, UIContextMenuInteractionDelegate {
             return UIMenu(title: "", children: [editAction, shareAction, deleteAction])
         }
     }
-    func configure(with wish: String, at index: Int, delegate: WrittenWishCellDelegate?) {
+    
+    private var wrapBgColor: UIColor = .white {
+        didSet {
+            wrap.backgroundColor = wrapBgColor
+        }
+    }
+    
+    private var wishLabelTextColor: UIColor = .black {
+        didSet {
+            wishLabel.textColor = wishLabelTextColor
+        }
+    }
+    
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        previewForHighlightingMenuWithConfiguration configuration: UIContextMenuConfiguration
+    ) -> UITargetedPreview?
+    {
+        // Создаём объект параметров предпросмотра
+        let previewParams = UIPreviewParameters()
+        // Делаем «прозрачным» фон вокруг wrap, сохраняя при этом сам wrap цветным:
+        previewParams.visiblePath = UIBezierPath(
+            roundedRect: wrap.bounds,
+            cornerRadius: wrap.layer.cornerRadius
+        )
+
+        // Возвращаем UITargetedPreview, «привязанный» к wrap
+        return UITargetedPreview(view: wrap, parameters: previewParams)
+    }
+    
+    
+    func configure(with wish: String, at index: Int, withBgColor bgColor: UIColor, withTextColor textColor: UIColor, delegate: WrittenWishCellDelegate?) {
         self.wishLabel.text = wish
         self.index = index
         self.delegate = delegate
+        wrapBgColor = bgColor
+        wishLabelTextColor = textColor
+        
     }
     
     func configureWrap () {
         wrap.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(wrap)
-        wrap.backgroundColor = .white
         wrap.layer.cornerRadius = Constants.Wrap.cornerRadius
         wrap.pinVertical(to: self, Constants.Wrap.offsetV)
         wrap.pinHorizontal(to: self, Constants.Wrap.offsetH)
@@ -103,6 +136,7 @@ final class WrittenWishCell: UITableViewCell, UIContextMenuInteractionDelegate {
         selectionStyle = .none
         backgroundColor = .clear
         configureWrap()
+        wishLabel.textColor = .white
         wrap.addSubview(wishLabel)
         wishLabel.pinVertical(to: wrap, Constants.Wrap.wishLabelOffset)
         wishLabel.pinLeft(to: wrap, Constants.Wrap.wishLabelOffset)

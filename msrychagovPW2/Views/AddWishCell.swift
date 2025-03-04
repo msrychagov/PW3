@@ -32,6 +32,7 @@ final class AddWishCell: UITableViewCell {
     private let wrap: UIView = UIView()
     private let addButton: UIButton = UIButton(type: .custom)
     private let textField: UITextField = UITextField()
+    
     var addWish: ((String) -> Void)?
     
     // MARK: - Lifecycle
@@ -48,8 +49,30 @@ final class AddWishCell: UITableViewCell {
         textField.text = text
     }
     
+    private var textFieldColor: UIColor = .black {
+        didSet {
+            textField.textColor = textFieldColor
+            addButton.tintColor = textFieldColor
+            textField.attributedPlaceholder = NSAttributedString(
+                string: "Введите желание", // Текст плейсхолдера
+                attributes: [
+                    .foregroundColor: textFieldColor
+                ]
+            )
+        }
+    }
+    
+    private var wrapBackgroundColor: UIColor = .white {
+        didSet {
+            wrap.backgroundColor = wrapBackgroundColor
+        }
+    }
     //MARK: - Configures
     
+    func configure (textColor: UIColor, backgroundColor: UIColor) {
+        textFieldColor = textColor
+        wrapBackgroundColor = backgroundColor
+    }
     func configureUI() {
         selectionStyle = .none
         backgroundColor = .clear
@@ -61,7 +84,6 @@ final class AddWishCell: UITableViewCell {
     
     func configureWrapLabel() {
         wrap.translatesAutoresizingMaskIntoConstraints = Constants.Other.translatesAutoresizingMaskIntoConstraints
-        wrap.backgroundColor = .white
         wrap.layer.cornerRadius = 10
         contentView.addSubview(wrap)
         wrap.pin(to: contentView, Constants.Wrap.pinContraint)
@@ -81,7 +103,6 @@ final class AddWishCell: UITableViewCell {
     
     func configureAddButton() {
         addButton.translatesAutoresizingMaskIntoConstraints = Constants.Other.translatesAutoresizingMaskIntoConstraints
-        addButton.tintColor = Constants.AddButton.backgroundColor
         addButton.setHeight(Constants.AddButton.height)
         addButton.setWidth(Constants.AddButton.width)
         addButton.setImage(UIImage(systemName: "plus.circle.fill"),for: .normal)
