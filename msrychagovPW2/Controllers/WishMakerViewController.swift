@@ -271,6 +271,8 @@ final class WishMakerViewController: UIViewController {
     @objc private func scheduleWishButtonPressed() {
         let vc = WishCalendarViewController()
         vc.view.backgroundColor = colors
+        vc.cellColor = colors.inverted()
+        vc.cellTextColor = colors
         navigationController?.pushViewController(vc, animated: true)
     }
     

@@ -17,6 +17,17 @@ final class AddWishEventViewController: UIViewController {
     private var descriptionText: String = ""
     private var startDate: Date = Date()
     private var endDate: Date = Date()
+    var textColor: UIColor? {
+        didSet {
+            addEventButton.setTitleColor(textColor, for: .normal)
+        }
+    }
+    var tableColor: UIColor? {
+        didSet {
+            tableView.backgroundColor = tableColor
+            addEventButton.backgroundColor = tableColor
+        }
+    }
     var onAddWish: ((WishEventModel) -> Void)?
     //MARK: - Methods
     override func viewDidLoad() {
@@ -29,33 +40,50 @@ final class AddWishEventViewController: UIViewController {
         tableView.reloadData() // ✅ Обновляем таблицу, чтобы заголовок отобразился
     }
     
+    func setWishDescription(_ description: String) {
+        descriptionText = description
+        tableView.reloadData() 
+    }
+    
+    func setWishStartDate(_ date: Date) {
+        startDate = date
+        tableView.reloadData()
+    }
+    
+    func setWishEndDate(_ date: Date) {
+        endDate = date
+        tableView.reloadData()
+    }
+    
     //MARK: Configures
     func configureUI() {
-        configureTableView()
         configureAddEventButton()
+        configureTableView()
     }
     
     func configureTableView() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = .white
+        tableView.layer.cornerRadius = 10
+        tableView.rowHeight = 180
         view.addSubview(tableView)
         tableView.dataSource = self
         tableView.separatorStyle = .singleLine
-        tableView.pin(to: view, 10)
+        tableView.pin(to: view, 20)
+        tableView.pinBottom(to: addEventButton.topAnchor, 20)
         tableView.register(TextParametrCell.self, forCellReuseIdentifier: TextParametrCell.reuseIdentifier)
         tableView.register(DateParametrCell.self, forCellReuseIdentifier: DateParametrCell.reuseIdentifier)
     }
     
     func configureAddEventButton() {
         addEventButton.translatesAutoresizingMaskIntoConstraints = false
-        addEventButton.setTitle("Добавить", for: .normal)
+        addEventButton.setTitle("Save", for: .normal)
         addEventButton.layer.cornerRadius = 10
         addEventButton.setHeight(50)
         addEventButton.setWidth(150)
-        addEventButton.backgroundColor = .black
-        tableView.addSubview(addEventButton)
-        addEventButton.pinBottom(to: tableView.safeAreaLayoutGuide.bottomAnchor, 20)
-        addEventButton.pinRight(to: tableView.safeAreaLayoutGuide.trailingAnchor, 20)
+        addEventButton.titleLabel?.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        view.addSubview(addEventButton)
+        addEventButton.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, 20)
+        addEventButton.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
         addEventButton.addTarget(self, action: #selector(addEvent), for: .touchUpInside)
         
     }
@@ -105,41 +133,48 @@ extension AddWishEventViewController: UITableViewDataSource {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: TextParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? TextParametrCell {
-                cell.configure(with: "Title")
+                cell.configure(with: "Title:", text: textColor!)
                 cell.setText(titleText) // ✅ Теперь заголовок будет заполняться
                 cell.addEvent = { [weak self] newEvent in
                     guard let self = self else { return }
                     self.titleText = newEvent
                 }
             }
+            cell.selectionStyle = .none
             return cell
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: TextParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? TextParametrCell {
-                cell.configure(with: "D")
+                cell.configure(with: "Description:", text: textColor!)
+                cell.setText(descriptionText) 
                 cell.addEvent = { [weak self] newEvent in guard let self = self else { return }
                     descriptionText = newEvent}
             }
+            cell.selectionStyle = .none
             return cell
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: DateParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? DateParametrCell {
-                cell.configure()
+                cell.configure(with: "StartDate:", text: textColor!)
+                cell.setDate(startDate)
                 cell.addeventHandler = { [weak self] newEvent in guard let self = self else { return }
                     startDate = newEvent
                 }
                 
             }
+            cell.selectionStyle = .none
             return cell
         case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: DateParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? DateParametrCell {
-                cell.configure()
+                cell.configure(with: "EndDate:", text: textColor!)
+                cell.setDate(endDate)
                 cell.addeventHandler = { [weak self] newEvent in guard let self = self else { return }
                     endDate = newEvent
                 }
                 
             }
+            cell.selectionStyle = .none
             return cell
         default: return UITableViewCell()
         }

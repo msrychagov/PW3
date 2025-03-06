@@ -7,13 +7,20 @@
 
 import UIKit
 
-final class TextParametrCell: UITableViewCell {
+final class TextParametrCell: UITableViewCell, UITextViewDelegate {
     //MARK: - Constants
     
     //MARK: - Variables
     static let reuseIdentifier: String = "TextParametrCell"
     private let textField: UITextField = UITextField()
     private let label: UILabel = UILabel()
+    private let textView = UITextView()
+    var textColor: UIColor? {
+        didSet {
+            label.textColor = textColor
+        }
+    }
+
     var addEvent: ((String) -> Void)?
     //MARK: - Lyfecycles
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -26,38 +33,42 @@ final class TextParametrCell: UITableViewCell {
     }
     //MARK: - Methods
     func setText(_ text: String) {
-        textField.text = text // ✅ Устанавливаем текст в поле ввода
+        textView.text = text // ✅ Устанавливаем текст в поле ввода
     }
     //MARK: - Configures
-    func configure (with parametr: String) {
+    func configure (with parametr: String, text: UIColor) {
         label.text = parametr
+        textColor = text
     }
     func configureUI() {
-        backgroundColor = .blue
-        configureTextField()
+        backgroundColor = .clear
         configureLabel()
+        configureTextView()
     }
-    
-    func configureTextField() {
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.backgroundColor = .green
-        contentView.addSubview(textField)
-        textField.pinRight(to: contentView.trailingAnchor, 8)
-        textField.setWidth(100)
-        textField.addTarget(self, action: #selector(changeTextField), for: .editingChanged)
+    func configureTextView() {
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.backgroundColor = .clear
+        textView.font = .systemFont(ofSize: 20, weight: .medium)
+        textView.delegate = self
+        contentView.addSubview(textView)
+        textView.pinTop(to: label.bottomAnchor)
+        textView.pinBottom(to: contentView.safeAreaLayoutGuide.bottomAnchor, 10)
+        textView.pinHorizontal(to: contentView, 10)
     }
     
     func configureLabel() {
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.backgroundColor = .red
+        label.backgroundColor = .clear
+        label.setHeight(80)
+        label.font = .systemFont(ofSize: 40, weight: .bold)
+        label.layer.masksToBounds = true
         contentView.addSubview(label)
-        label.pinLeft(to: contentView.leadingAnchor, 8)
-        label.pinRight(to: textField.leadingAnchor, 8)
+        label.pinTop(to: contentView.safeAreaLayoutGuide.topAnchor, 10)
+        label.pinHorizontal(to: contentView, 10)
         
     }
     
-    @objc private func changeTextField() {
-        guard let text = textField.text, !text.isEmpty else { return }
-        addEvent?(text) // Вызываем замыкатель, передавая текст
+    func textViewDidChange(_ textView: UITextView) {
+            addEvent?(textView.text) // Передаём введённый текст
         }
 }

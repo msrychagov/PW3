@@ -158,7 +158,7 @@ final class WrittenWishCell: UITableViewCell, UIContextMenuInteractionDelegate {
     }
 }
 
-protocol WrittenWishCellDelegate: AnyObject {
+protocol WrittenWishCellDelegate: WishStoringViewController {
     func editWish(_ text: String, at index: Int)
     func shareWish(_ text: String)
 }
