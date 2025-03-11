@@ -18,6 +18,10 @@ struct CalendarEventModel {
 }
 
 final class CalendarManager: CalendarManaging {
+    static let shared = CalendarManager()
+    
+    private init() {}
+    
     private let eventStore : EKEventStore = EKEventStore()
     func requestCalendarAccess() {
            switch EKEventStore.authorizationStatus(for: .event) {

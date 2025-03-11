@@ -9,7 +9,20 @@ import UIKit
 
 final class DateParametrCell: UITableViewCell {
     //MARK: - Constants
-    
+    private enum Constants {
+        enum Label {
+            static let height: CGFloat = 80
+            static let fontSize: CGFloat = 40
+            static let fontWeight: UIFont.Weight = .bold
+            static let topConstraint: CGFloat = 10
+            static let horizontalConstraint: CGFloat = 10
+            static let backGotundColor: UIColor = .clear
+        }
+        enum DatePicker {
+            static let topConstraint: CGFloat = 10
+            static let bottomConsraint: CGFloat = 5
+        }
+    }
     //MARK: - Variables
     static let reuseIdentifier: String = "DateParametrCell"
     private let datePicker = UIDatePicker()
@@ -21,9 +34,11 @@ final class DateParametrCell: UITableViewCell {
         }
     }
     
+    //MARK: Methods
     func setDate(_ date: Date) {
         datePicker.date = date
     }
+    
     //MARK: - Configures
     func configure(with parametr: String, text: UIColor) {
         textColor = text
@@ -38,13 +53,13 @@ final class DateParametrCell: UITableViewCell {
     }
     func configureLabel() {
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.backgroundColor = .clear
-        label.setHeight(80)
-        label.font = .systemFont(ofSize: 40, weight: .bold)
+        label.backgroundColor = Constants.Label.backGotundColor
+        label.setHeight(Constants.Label.height)
+        label.font = .systemFont(ofSize: Constants.Label.fontSize, weight: Constants.Label.fontWeight)
         label.layer.masksToBounds = true
         contentView.addSubview(label)
-        label.pinTop(to: contentView.safeAreaLayoutGuide.topAnchor, 10)
-        label.pinHorizontal(to: contentView, 10)
+        label.pinTop(to: contentView.safeAreaLayoutGuide.topAnchor, Constants.Label.topConstraint)
+        label.pinHorizontal(to: contentView, Constants.Label.horizontalConstraint)
     }
     
     func configureDatePicker() {

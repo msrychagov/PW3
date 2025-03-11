@@ -9,7 +9,36 @@ import UIKit
 
 final class AddWishEventViewController: UIViewController {
     //MARK: - Constants
-    
+    private enum Constants {
+        enum TableView {
+            static let cornerRadius: CGFloat = 10
+            static let rowHeight: CGFloat = 180
+            static let constraint: CGFloat = 20
+            static let bottomConstraint: CGFloat = 20
+            static let numberOfSections: Int = 4
+            static let zeroSection: Int = 0
+            static let firstSection: Int = 1
+            static let secondSection: Int = 2
+            static let thirdSection: Int = 3
+            static let forNumberOfSectionReturnesValues: Int = 1
+            static let defaultScetcionsReturnesValue: Int = 0
+        }
+        enum CellTitles {
+            static let title: String = "Title"
+            static let description: String = "Description"
+            static let startDate: String = "Start Date"
+            static let endDate: String = "End Date"
+        }
+        enum AddEventButton {
+            static let title: String = "Save"
+            static let cornerRadius: CGFloat = 10
+            static let height: CGFloat = 50
+            static let width: CGFloat = 150
+            static let titleLabelFontSize: CGFloat = 30
+            static let titleLabelFontWeight: UIFont.Weight = .bold
+            static let bottomConstraint: CGFloat = 20
+        }
+    }
     //MARK: - Variables
     private let tableView: UITableView = UITableView()
     private let addEventButton: UIButton = UIButton(type: .system)
@@ -17,6 +46,8 @@ final class AddWishEventViewController: UIViewController {
     private var descriptionText: String = ""
     private var startDate: Date = Date()
     private var endDate: Date = Date()
+    
+    //MARK: Properties
     var textColor: UIColor? {
         didSet {
             addEventButton.setTitleColor(textColor, for: .normal)
@@ -36,8 +67,8 @@ final class AddWishEventViewController: UIViewController {
     }
     
     func setWishTitle(_ title: String) {
-        titleText = title // ✅ Записываем заголовок
-        tableView.reloadData() // ✅ Обновляем таблицу, чтобы заголовок отобразился
+        titleText = title
+        tableView.reloadData()
     }
     
     func setWishDescription(_ description: String) {
@@ -63,26 +94,26 @@ final class AddWishEventViewController: UIViewController {
     
     func configureTableView() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.layer.cornerRadius = 10
-        tableView.rowHeight = 180
+        tableView.layer.cornerRadius = Constants.TableView.cornerRadius
+        tableView.rowHeight = Constants.TableView.rowHeight
         view.addSubview(tableView)
         tableView.dataSource = self
         tableView.separatorStyle = .singleLine
-        tableView.pin(to: view, 20)
-        tableView.pinBottom(to: addEventButton.topAnchor, 20)
+        tableView.pin(to: view, Constants.TableView.constraint)
+        tableView.pinBottom(to: addEventButton.topAnchor, Constants.TableView.bottomConstraint)
         tableView.register(TextParametrCell.self, forCellReuseIdentifier: TextParametrCell.reuseIdentifier)
         tableView.register(DateParametrCell.self, forCellReuseIdentifier: DateParametrCell.reuseIdentifier)
     }
     
     func configureAddEventButton() {
         addEventButton.translatesAutoresizingMaskIntoConstraints = false
-        addEventButton.setTitle("Save", for: .normal)
-        addEventButton.layer.cornerRadius = 10
-        addEventButton.setHeight(50)
-        addEventButton.setWidth(150)
-        addEventButton.titleLabel?.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        addEventButton.setTitle(Constants.AddEventButton.title, for: .normal)
+        addEventButton.layer.cornerRadius = Constants.AddEventButton.cornerRadius
+        addEventButton.setHeight(Constants.AddEventButton.height)
+        addEventButton.setWidth(Constants.AddEventButton.width)
+        addEventButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.AddEventButton.titleLabelFontSize, weight: Constants.AddEventButton.titleLabelFontWeight)
         view.addSubview(addEventButton)
-        addEventButton.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, 20)
+        addEventButton.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, Constants.AddEventButton.bottomConstraint)
         addEventButton.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
         addEventButton.addTarget(self, action: #selector(addEvent), for: .touchUpInside)
         
@@ -92,7 +123,7 @@ final class AddWishEventViewController: UIViewController {
     @objc func addEvent() {
         var new = WishEventModel(title: titleText, description: descriptionText, startDate: startDate, endDate: endDate)
         
-        let calendarManager = CalendarManager()
+        let calendarManager = CalendarManager.shared
         let event = CalendarEventModel(
             title: titleText,
             startDate: startDate,
@@ -115,26 +146,26 @@ final class AddWishEventViewController: UIViewController {
 //MARK: - UITableViewDataSource
 extension AddWishEventViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return Constants.TableView.numberOfSections
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0: return 1
-        case 1: return 1
-        case 2: return 1
-        case 3: return 1
-        default: return 0
+        case Constants.TableView.zeroSection: return Constants.TableView.forNumberOfSectionReturnesValues
+        case Constants.TableView.firstSection: return Constants.TableView.forNumberOfSectionReturnesValues
+        case Constants.TableView.secondSection: return Constants.TableView.forNumberOfSectionReturnesValues
+        case Constants.TableView.thirdSection: return Constants.TableView.forNumberOfSectionReturnesValues
+        default: return Constants.TableView.defaultScetcionsReturnesValue
         }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
-        case 0:
+        case Constants.TableView.zeroSection:
             let cell = tableView.dequeueReusableCell(withIdentifier: TextParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? TextParametrCell {
-                cell.configure(with: "Title:", text: textColor!)
-                cell.setText(titleText) // ✅ Теперь заголовок будет заполняться
+                cell.configure(with: Constants.CellTitles.title, text: textColor!)
+                cell.setText(titleText)
                 cell.addEvent = { [weak self] newEvent in
                     guard let self = self else { return }
                     self.titleText = newEvent
@@ -142,20 +173,20 @@ extension AddWishEventViewController: UITableViewDataSource {
             }
             cell.selectionStyle = .none
             return cell
-        case 1:
+        case Constants.TableView.firstSection:
             let cell = tableView.dequeueReusableCell(withIdentifier: TextParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? TextParametrCell {
-                cell.configure(with: "Description:", text: textColor!)
-                cell.setText(descriptionText) 
+                cell.configure(with: Constants.CellTitles.description, text: textColor!)
+                cell.setText(descriptionText)
                 cell.addEvent = { [weak self] newEvent in guard let self = self else { return }
                     descriptionText = newEvent}
             }
             cell.selectionStyle = .none
             return cell
-        case 2:
+        case Constants.TableView.secondSection:
             let cell = tableView.dequeueReusableCell(withIdentifier: DateParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? DateParametrCell {
-                cell.configure(with: "StartDate:", text: textColor!)
+                cell.configure(with: Constants.CellTitles.startDate, text: textColor!)
                 cell.setDate(startDate)
                 cell.addeventHandler = { [weak self] newEvent in guard let self = self else { return }
                     startDate = newEvent
@@ -164,10 +195,10 @@ extension AddWishEventViewController: UITableViewDataSource {
             }
             cell.selectionStyle = .none
             return cell
-        case 3:
+        case Constants.TableView.thirdSection:
             let cell = tableView.dequeueReusableCell(withIdentifier: DateParametrCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? DateParametrCell {
-                cell.configure(with: "EndDate:", text: textColor!)
+                cell.configure(with: Constants.CellTitles.endDate, text: textColor!)
                 cell.setDate(endDate)
                 cell.addeventHandler = { [weak self] newEvent in guard let self = self else { return }
                     endDate = newEvent

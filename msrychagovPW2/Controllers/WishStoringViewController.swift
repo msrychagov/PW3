@@ -9,20 +9,6 @@ import UIKit
 final class WishStoringViewController: UIViewController, WrittenWishCellDelegate {
     // MARK: - Constants
     private enum Constants {
-        enum View {
-            enum Names {
-                
-            }
-            
-            enum Constraints {
-                
-            }
-            
-            enum Colors {
-                static let background: UIColor = .systemGray6
-            }
-        }
-        
         enum TableView {
             static let backgroundColor: UIColor = .clear
             static let cornerRadius: CGFloat = 10
@@ -34,22 +20,21 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
             static let firstSection: Int = 1
         }
         
-        enum WishArray {
-            static let toSetName: String = "Wishes"
+        enum DeleteAction {
+            static let title: String = "Delete"
+            static let imageSystemName: String = "trash"
         }
         
-        enum Defaults {
-            enum Names {
-                
-            }
-            
-            enum Constraints {
-                
-            }
-            
-            enum Colors {
-                
-            }
+        enum WishArray  {
+            static let defaultsKey: String = "Wishes"
+        }
+        
+        enum TapGesture {
+            static let cancelsTouchesInView: Bool = false
+        }
+        
+        enum ActivityViewController {
+            static let animated: Bool = true
         }
         
         enum Other {
@@ -67,20 +52,19 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
     private let editText: String = ""
     var cellBackgroundColor: UIColor = .white
     var wishLabelTextColor: UIColor = .black
-    private var editingIndex: Int? // Индекс редактируемого желания
+    private var editingIndex: Int?
     private var addWishCell: AddWishCell?
     var textColor: UIColor = .black
-    var onWishSelected: ((String) -> Void)?
     
+    var onWishSelected: ((String) -> Void)?
     
     // MARK: - Methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        wishArray = defaults.array(forKey: Constants.WishArray.toSetName) as? [String] ?? []
-        view.backgroundColor = .gray
+        wishArray = defaults.array(forKey: Constants.WishArray.defaultsKey) as? [String] ?? []
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-           tapGesture.cancelsTouchesInView = false // Позволяет обрабатывать другие нажатия
-           view.addGestureRecognizer(tapGesture)
+        tapGesture.cancelsTouchesInView = Constants.TapGesture.cancelsTouchesInView  // Позволяет обрабатывать другие нажатия
+        view.addGestureRecognizer(tapGesture)
         
         
         configureUI()
@@ -88,17 +72,17 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
     }
     
     func editWish(_ text: String, at index: Int) {
-        addWishCell?.setText(text) // ✅ Устанавливаем текст в AddWishCell
-        editingIndex = index // ✅ Запоминаем, какое желание редактируем
+        addWishCell?.setText(text)
+        editingIndex = index
     }
     
     func shareWish(_ text: String) {
         let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
-        present(activityViewController, animated: true)
+        present(activityViewController, animated: Constants.ActivityViewController.animated)
     }
     
     func didSelectWish(_ wish: String) {
-        onWishSelected?(wish) // ✅ Передаём желание
+        onWishSelected?(wish)
     }
     
     // MARK: - Configures
@@ -108,7 +92,7 @@ final class WishStoringViewController: UIViewController, WrittenWishCellDelegate
     
     private func configureTable() {
         view.addSubview(tableView)
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = Constants.TableView.backgroundColor
         tableView.dataSource = self
         tableView.delegate = self
         tableView.separatorStyle = .none
@@ -151,7 +135,7 @@ extension WishStoringViewController: UITableViewDataSource {
             )
             guard let addWishCell = cell as? AddWishCell else { return cell }
             addWishCell.configure(textColor: wishLabelTextColor, backgroundColor: cellBackgroundColor)
-            self.addWishCell = addWishCell // ✅ Сохраняем ссылку на AddWishCell
+            self.addWishCell = addWishCell
             
             addWishCell.addWish = { [weak self] newWish in
                 guard let self = self else { return }
@@ -163,12 +147,13 @@ extension WishStoringViewController: UITableViewDataSource {
                     self.wishArray.append(newWish)
                 }
                 
-                self.defaults.set(self.wishArray, forKey: Constants.WishArray.toSetName)
-                self.addWishCell?.setText("") // ✅ Очищаем поле после редактирования
+                self.defaults.set(self.wishArray, forKey: Constants.WishArray.defaultsKey)
+                self.addWishCell?.setText("")
                 self.tableView.reloadData()
             }
             
             return addWishCell
+            
         case Constants.TableView.firstSection:
             let cell = tableView.dequeueReusableCell(
                 withIdentifier: WrittenWishCell.reuseId,
@@ -182,17 +167,16 @@ extension WishStoringViewController: UITableViewDataSource {
                 guard let self = self else { return }
                 self.editWish(self.wishArray[indexPath.row], at: indexPath.row)
             }
-
+            
             wishCell.onShare = { [weak self] in
                 guard let self = self else { return }
-                let activityViewController = UIActivityViewController(activityItems: [self.wishArray[indexPath.row]], applicationActivities: nil)
-                self.present(activityViewController, animated: true)
+                self.shareWish(self.wishArray[indexPath.row])
             }
-
+            
             wishCell.onDelete = { [weak self] in
                 guard let self = self else { return }
                 self.wishArray.remove(at: indexPath.row)
-                self.defaults.set(self.wishArray, forKey: "Wishes")
+                self.defaults.set(self.wishArray, forKey: Constants.WishArray.defaultsKey)
                 self.tableView.reloadData()
             }
             return wishCell
@@ -202,21 +186,22 @@ extension WishStoringViewController: UITableViewDataSource {
     }
 }
 
+//MARK: UITableViewDelegate
 extension WishStoringViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completionHandler in guard let self = self else { return }
+        let deleteAction = UIContextualAction(style: .destructive, title: Constants.DeleteAction.title) { [weak self] _, _, completionHandler in guard let self = self else { return }
             
             self.wishArray.remove(at: indexPath.row)
             
-            defaults.set(self.wishArray, forKey: "Wishes")
+            defaults.set(self.wishArray, forKey: Constants.WishArray.defaultsKey)
             tableView.deleteRows(at: [indexPath], with: .automatic)
             completionHandler(true)
         }
         
         // Настройка действия
-        deleteAction.backgroundColor = UIColor.red // Цвет фона
-        deleteAction.image = UIImage(systemName: "trash") // Иконка действия
+        deleteAction.backgroundColor = UIColor.red
+        deleteAction.image = UIImage(systemName: Constants.DeleteAction.imageSystemName) // Иконка действия
         
         // Возвращаем конфигурацию действий
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction])

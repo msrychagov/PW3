@@ -40,34 +40,11 @@ final class WishMakerViewController: UIViewController {
         static let buttonSide: CGFloat = 10
         static let buttonText: String = "Add Wish"
         static let buttonRadius: CGFloat = 10
-        
-        enum Title {
-            
-        }
-        
-        enum Description {
-            
-        }
-        
-        enum SlidersStack {
-            
-        }
-        
-        enum ToggleButton {
-            
-        }
-        
-        enum AddWishButton {
-            
-        }
-        
-        enum ScheduleButton {
-            static let titleText: String = "Schedule wish granting"
-        }
-        
-        enum ActionStack {
-            
-        }
+        static let titleText: String = "Schedule wish granting"
+        static let stackBottomConstraint: CGFloat = 10
+        static let actionStackSpacing: CGFloat = 3
+        static let actionStackBottomConstraint: CGFloat = 15
+        static let actionStackHorizontalConstraint: CGFloat = 15
         
     }
     
@@ -114,6 +91,7 @@ final class WishMakerViewController: UIViewController {
             
         }
     }
+    
     // MARK: - Methods
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -137,7 +115,6 @@ final class WishMakerViewController: UIViewController {
         titleView.backgroundColor = .white
         titleView.layer.cornerRadius = Constants.stackCornerRadius
         titleView.layer.masksToBounds = true
-        
         
         view.addSubview(titleView)
         titleView.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
@@ -177,7 +154,7 @@ final class WishMakerViewController: UIViewController {
         
         stack.pinCenterX(to: view.centerXAnchor)
         stack.pinLeft(to: view.leadingAnchor, Constants.leftContraint)
-        stack.pinBottom(to: actionStack.topAnchor, 10)
+        stack.pinBottom(to: actionStack.topAnchor, Constants.stackBottomConstraint)
         stack.setWidth(Constants.stackWidth)
         
         for slider in [sliderRed, sliderBlue, sliderGreen] {
@@ -234,7 +211,7 @@ final class WishMakerViewController: UIViewController {
     
     private func configureScheduleButton() {
         scheduleButton.translatesAutoresizingMaskIntoConstraints = false
-        scheduleButton.setTitle(Constants.ScheduleButton.titleText, for: .normal)
+        scheduleButton.setTitle(Constants.titleText, for: .normal)
         scheduleButton.titleLabel?.font = UIFont.systemFont(ofSize: Constants.descriptionFontSize)
         scheduleButton.setTitleColor(colors, for: .normal)
         scheduleButton.layer.cornerRadius = Constants.buttonRadius
@@ -245,14 +222,14 @@ final class WishMakerViewController: UIViewController {
     private func configureActionStack() {
         actionStack.axis = .vertical
         view.addSubview(actionStack)
-        actionStack.spacing = 3
+        actionStack.spacing = Constants.actionStackSpacing
         for button in [addWishButton, scheduleButton] {
             actionStack.addArrangedSubview(button)
         }
         configureAddWishButton()
         configureScheduleButton()
-        actionStack.pinBottom(to: view, 15)
-        actionStack.pinHorizontal(to: view, 15)
+        actionStack.pinBottom(to: view, Constants.actionStackBottomConstraint)
+        actionStack.pinHorizontal(to: view, Constants.actionStackHorizontalConstraint)
     }
     // MARK: - Actions
     @objc private func toggleSlidersVisibility() {
@@ -278,6 +255,7 @@ final class WishMakerViewController: UIViewController {
     
 }
 
+//MARK: UIColor
 extension UIColor {
     /// Инвертирует цвет (меняет белый на черный, синий на желтый и т. д.)
     func inverted() -> UIColor {

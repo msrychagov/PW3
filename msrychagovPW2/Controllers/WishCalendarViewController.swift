@@ -13,8 +13,42 @@ class WishCalendarViewController: UIViewController{
     
     
     //MARK: - Constants
-    private enum Contants {
-        
+    private enum Constants {
+        enum CollectionView {
+            static let boundsWidthDiff: CGFloat = 10
+            static let height: CGFloat = 200
+            static let layoutMinimumLineSpacing: CGFloat = 0
+            static let layoutMinimumInteritemSpacing: CGFloat = 0
+            static let contentInset: CGFloat = 10
+            static let cornerRadius: CGFloat = 10
+            static let horizontalConstraint: CGFloat = 20
+            static let bottomConstraint: CGFloat = 30
+            static let topConstraint: CGFloat = 10
+        }
+        enum Cell {
+            static let forCellReuseIdentifier: String = "Cell"
+        }
+        enum AlerController {
+            static let title: String = "Добавить желание"
+            static let message: String = "Выберите способ добавления"
+            enum Actions {
+                static let cancel: String = "Отмена"
+                static let createNew: String = "Создать новое"
+                static let chooseExisting: String = "Выбрать из списка"
+            }
+        }
+        enum Defaults {
+            static let dataKey: String = "Events"
+        }
+        enum AddButton {
+            static let title: String = "Add"
+            static let titleLabelFontSize: CGFloat = 32
+            static let titleLabelFontWeight: UIFont.Weight = .bold
+            static let cornerRadius: CGFloat = 20
+            static let bottomConstraint: CGFloat = 3
+            static let width: CGFloat = 250
+            static let height: CGFloat = 80
+        }
     }
     
     //MARK: - Variables
@@ -25,6 +59,8 @@ class WishCalendarViewController: UIViewController{
         frame: .zero,
         collectionViewLayout: UICollectionViewFlowLayout()
     )
+    
+    //MARK: - Properties
     var cellTextColor: UIColor? {
         didSet {
             addButton.setTitleColor(cellTextColor, for: .normal)
@@ -44,8 +80,8 @@ class WishCalendarViewController: UIViewController{
         configureUI()
         if let layout = collectionView.collectionViewLayout as?
             UICollectionViewFlowLayout {
-            layout.minimumInteritemSpacing = 0
-            layout.minimumLineSpacing = 0
+            layout.minimumInteritemSpacing = Constants.CollectionView.layoutMinimumInteritemSpacing
+            layout.minimumLineSpacing = Constants.CollectionView.layoutMinimumLineSpacing
             layout.invalidateLayout()
         }
         /* Temporary line */
@@ -63,31 +99,28 @@ class WishCalendarViewController: UIViewController{
         vc.onAddWish = { [weak self] newWish in
             guard let self = self else { return }
             
-            // Добавляем новое событие в список
             self.wishEvents.append(newWish)
             
-            // Сохраняем данные
             self.saveEvents()
             
-            // Обновляем коллекцию
             self.collectionView.reloadData()
         }
         
-        present(vc, animated: true) // Открываем экран
+        present(vc, animated: true)
     }
     
     private func openWishListScreen() {
-        let wishListVC = WishStoringViewController() // Экран списка желаний
+        let wishListVC = WishStoringViewController()
         
-        wishListVC.view.backgroundColor = self.view.backgroundColor // ✅ Передаём цвет фона
+        wishListVC.view.backgroundColor = self.view.backgroundColor
         wishListVC.cellBackgroundColor = cellColor!
         wishListVC.wishLabelTextColor = cellTextColor!
         wishListVC.onWishSelected = { [weak self] selectedWish in
-            self?.navigationController?.popViewController(animated: true) // 🔙 Закрываем экран
-            self?.addWishFromList(selectedWish) // ✅ Открываем экран создания события
+            self?.navigationController?.popViewController(animated: true)
+            self?.addWishFromList(selectedWish)
         }
         
-        navigationController?.pushViewController(wishListVC, animated: true) // ✅ Переход на экран списка
+        navigationController?.pushViewController(wishListVC, animated: true)
     }
     
     private func addWishFromList(_ wish: String) {
@@ -95,7 +128,7 @@ class WishCalendarViewController: UIViewController{
         vc.view.backgroundColor = view.backgroundColor
         vc.textColor = cellTextColor
         vc.tableColor = cellColor
-        vc.setWishTitle(wish) // ✅ Устанавливаем заголовок
+        vc.setWishTitle(wish)
         
         vc.onAddWish = { [weak self] newWish in
             guard let self = self else { return }
@@ -130,6 +163,19 @@ class WishCalendarViewController: UIViewController{
         present(activityViewController, animated: true)
     }
     
+    private func saveEvents() {
+        if let encodedData = try? JSONEncoder().encode(wishEvents) {
+            defaults.set(encodedData, forKey: Constants.Defaults.dataKey)
+        }
+    }
+    
+    private func loadEvents() {
+        if let savedData = defaults.data(forKey: Constants.Defaults.dataKey),
+           let decodedEvents = try? JSONDecoder().decode([WishEventModel].self, from: savedData) {
+            wishEvents = decodedEvents
+        }
+    }
+    
     //MARK: - Configures
     private func configureUI() {
         view.addSubview(collectionView)
@@ -139,13 +185,13 @@ class WishCalendarViewController: UIViewController{
     }
     private func configureAddButton() {
         addButton.translatesAutoresizingMaskIntoConstraints = false
-        addButton.setTitle("Добавить", for: .normal)
-        addButton.titleLabel?.font = .systemFont(ofSize: 32, weight: .bold)
-        addButton.layer.cornerRadius = 20
-        addButton.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, 3)
+        addButton.setTitle(Constants.AddButton.title, for: .normal)
+        addButton.titleLabel?.font = .systemFont(ofSize: Constants.AddButton.titleLabelFontSize, weight: Constants.AddButton.titleLabelFontWeight)
+        addButton.layer.cornerRadius = Constants.AddButton.cornerRadius
+        addButton.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, Constants.AddButton.bottomConstraint)
         addButton.pinCenterX(to: view.centerXAnchor)
-        addButton.setWidth(250)
-        addButton.setHeight(80)
+        addButton.setWidth(Constants.AddButton.width)
+        addButton.setHeight(Constants.AddButton.height)
         addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         
     }
@@ -156,45 +202,32 @@ class WishCalendarViewController: UIViewController{
         collectionView.backgroundColor = .clear
         collectionView.alwaysBounceVertical = true
         collectionView.showsVerticalScrollIndicator = false
-        collectionView.contentInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        collectionView.layer.cornerRadius = 10
+        collectionView.contentInset = UIEdgeInsets(top: Constants.CollectionView.contentInset, left: Constants.CollectionView.contentInset, bottom: Constants.CollectionView.contentInset, right: Constants.CollectionView.contentInset)
+        collectionView.layer.cornerRadius = Constants.CollectionView.cornerRadius
         /* Temporary line */
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        collectionView.pinHorizontal(to: view, 20)
-        collectionView.pinBottom(to: addButton.topAnchor, 30)
-        collectionView.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 10)
-    }
-    
-    private func saveEvents() {
-        if let encodedData = try? JSONEncoder().encode(wishEvents) {
-            defaults.set(encodedData, forKey: "Events")
-        }
-    }
-    
-    private func loadEvents() {
-        if let savedData = defaults.data(forKey: "Events"),
-           let decodedEvents = try? JSONDecoder().decode([WishEventModel].self, from: savedData) {
-            wishEvents = decodedEvents
-        }
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: Constants.Cell.forCellReuseIdentifier)
+        collectionView.pinHorizontal(to: view, Constants.CollectionView.horizontalConstraint)
+        collectionView.pinBottom(to: addButton.topAnchor, Constants.CollectionView.bottomConstraint)
+        collectionView.pinTop(to: view.safeAreaLayoutGuide.topAnchor, Constants.CollectionView.topConstraint)
     }
     
     //MARK: - Actions
     @objc func addButtonTapped() {
         let alertController = UIAlertController(
-            title: "Добавить желание",
-            message: "Выберите способ добавления",
+            title: Constants.AlerController.title,
+            message: Constants.AlerController.message,
             preferredStyle: .actionSheet
         )
         
-        let createNewAction = UIAlertAction(title: "Создать новое", style: .default) { _ in
+        let createNewAction = UIAlertAction(title: Constants.AlerController.Actions.createNew, style: .default) { _ in
             self.openCreateWishScreen()
         }
         
-        let chooseExistingAction = UIAlertAction(title: "Выбрать из списка", style: .default) { _ in
+        let chooseExistingAction = UIAlertAction(title: Constants.AlerController.Actions.chooseExisting, style: .default) { _ in
             self.openWishListScreen()
         }
         
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: Constants.AlerController.Actions.cancel, style: .cancel, handler: nil)
         
         alertController.addAction(createNewAction)
         alertController.addAction(chooseExistingAction)
@@ -225,13 +258,20 @@ extension WishCalendarViewController: UICollectionViewDataSource {
         guard let wishEventCell = cell as? WishEventCell else {
             return cell
         }
+        
+        // Получаем модель для текущего элемента
+        let model = wishEvents[indexPath.item]
+        
+        // Конфигурируем ячейку
+        wishEventCell.configure(with: model, wrapColor: cellColor, text: cellTextColor)
+        
         wishEventCell.onDelete = { [weak self] in
             guard let self = self else { return }
             let model = self.wishEvents[indexPath.item]
             
             if let eventIdentifier = model.eventIdentifier, !eventIdentifier.isEmpty {
                 print("Удаление события с идентификатором: \(eventIdentifier)")
-                let calendarManager = CalendarManager()
+                let calendarManager = CalendarManager.shared
                 calendarManager.delete(eventIdentifier: eventIdentifier) { success in
                     if success {
                         print("Событие успешно удалено из календаря.")
@@ -262,11 +302,6 @@ extension WishCalendarViewController: UICollectionViewDataSource {
             )
             self.present(activityViewController, animated: true)
         }
-        // Получаем модель для текущего элемента
-        let model = wishEvents[indexPath.item]
-        
-        // Конфигурируем ячейку
-        wishEventCell.configure(with: model, wrapColor: cellColor, text: cellTextColor)
         
         return wishEventCell
     }
@@ -282,7 +317,7 @@ extension WishCalendarViewController: UICollectionViewDelegateFlowLayout {
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         // Adjust cell size as needed
-        return CGSize(width: collectionView.bounds.width - 10, height: 200)
+        return CGSize(width: collectionView.bounds.width - Constants.CollectionView.boundsWidthDiff, height: Constants.CollectionView.height)
     }
     func collectionView(
         _

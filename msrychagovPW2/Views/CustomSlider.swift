@@ -41,6 +41,7 @@ final class CustomSlider: UIView {
         slider.thumbTintColor = thumb
     }
     
+    //MARK: Configures
     private func configureUI() {
         backgroundColor = .white
         translatesAutoresizingMaskIntoConstraints = false

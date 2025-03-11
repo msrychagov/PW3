@@ -13,5 +13,5 @@ struct WishEventModel: Codable {
     var description: String
     var startDate: Date
     var endDate: Date
-    var eventIdentifier: String? // Поле для хранения идентификатора
+    var eventIdentifier: String?
 }

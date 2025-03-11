@@ -13,18 +13,26 @@ final class AddWishCell: UITableViewCell {
             static let placeholder: String = "Input ypur Wish"
             static let height: CGFloat = 50
             static let width: CGFloat = 100
+            static let verticalConstraint: CGFloat = 3
+            static let leftConstraint: CGFloat = 3
+            static let rightConstraint: CGFloat = 30
         }
         enum AddButton {
             static let backgroundColor: UIColor = .blue
             static let height: CGFloat = 20
             static let width: CGFloat = 20
-            static let rightConstraint: CGFloat = 10
+            static let leftConstraint: CGFloat = 5
+            static let imageSystemName: String = "checkmark"
         }
         enum Wrap {
             static let backgroundColor: UIColor = .red
             static let height: CGFloat = 50
             static let width: CGFloat = 100
             static let pinContraint: CGFloat = 10
+            static let cornerRadius: CGFloat = 10
+        }
+        enum PlaceHolder {
+            static let string: String = "Введите желание"
         }
     }
     
@@ -34,6 +42,26 @@ final class AddWishCell: UITableViewCell {
     private let textField: UITextField = UITextField()
     
     var addWish: ((String) -> Void)?
+    
+    //MARK: Properties
+    private var textFieldColor: UIColor = .black {
+        didSet {
+            textField.textColor = textFieldColor
+            addButton.tintColor = textFieldColor
+            textField.attributedPlaceholder = NSAttributedString(
+                string: Constants.PlaceHolder.string, // Текст плейсхолдера
+                attributes: [
+                    .foregroundColor: textFieldColor
+                ]
+            )
+        }
+    }
+    
+    private var wrapBackgroundColor: UIColor = Constants.Wrap.backgroundColor {
+        didSet {
+            wrap.backgroundColor = wrapBackgroundColor
+        }
+    }
     
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -45,34 +73,18 @@ final class AddWishCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: Methods
     func setText(_ text: String) {
         textField.text = text
     }
     
-    private var textFieldColor: UIColor = .black {
-        didSet {
-            textField.textColor = textFieldColor
-            addButton.tintColor = textFieldColor
-            textField.attributedPlaceholder = NSAttributedString(
-                string: "Введите желание", // Текст плейсхолдера
-                attributes: [
-                    .foregroundColor: textFieldColor
-                ]
-            )
-        }
-    }
-    
-    private var wrapBackgroundColor: UIColor = .white {
-        didSet {
-            wrap.backgroundColor = wrapBackgroundColor
-        }
-    }
     //MARK: - Configures
     
     func configure (textColor: UIColor, backgroundColor: UIColor) {
         textFieldColor = textColor
         wrapBackgroundColor = backgroundColor
     }
+    
     func configureUI() {
         selectionStyle = .none
         backgroundColor = .clear
@@ -93,19 +105,19 @@ final class AddWishCell: UITableViewCell {
         textField.translatesAutoresizingMaskIntoConstraints = Constants.Other.translatesAutoresizingMaskIntoConstraints
         textField.backgroundColor = .clear
         textField.placeholder = Constants.TextField.placeholder
-        textField.layer.cornerRadius = 10
+        textField.layer.cornerRadius = Constants.Wrap.cornerRadius
         wrap.addSubview(textField)
         
-        textField.pinVertical(to: wrap, 3)
-        textField.pinLeft(to: wrap, 3)
-        textField.pinRight(to: wrap, 30)
+        textField.pinVertical(to: wrap, Constants.TextField.verticalConstraint)
+        textField.pinLeft(to: wrap, Constants.TextField.leftConstraint)
+        textField.pinRight(to: wrap, Constants.TextField.rightConstraint)
     }
     
     func configureAddButton() {
         addButton.translatesAutoresizingMaskIntoConstraints = Constants.Other.translatesAutoresizingMaskIntoConstraints
         addButton.setHeight(Constants.AddButton.height)
         addButton.setWidth(Constants.AddButton.width)
-        addButton.setImage(UIImage(systemName: "plus.circle.fill"),for: .normal)
+        addButton.setImage(UIImage(systemName: Constants.AddButton.imageSystemName), for: .normal)
         contentView.addSubview(addButton)
         addButton.pinCenterY(to: textField)
         addButton.pinLeft(to: textField.trailingAnchor, 5)
